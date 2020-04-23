@@ -50,19 +50,7 @@ public class GeoLine implements AligmentElement {
                 +((point.getY()-getStartCoord().getY())*(getEndCoord().getY()-getStartCoord().getY())))
                 /Math.pow(getLength(),2);
 
-        CogoPoint pointOnLine = new CogoPoint();
-        pointOnLine.setLocation(getStartCoord().getX()+(u*(getEndCoord().getX()-getStartCoord().getX())),getStartCoord().getY()+(u*(getEndCoord().getY()-getStartCoord().getY())));
-
-
         double localStation = u*getLength();
-//        double offset;
-//        double angleBetweenLineAndPoint = getStartCoord().gradeAzimuth(point)-getStartCoord().gradeAzimuth(getEndCoord());
-//        if (angleBetweenLineAndPoint<0) angleBetweenLineAndPoint+=400;
-//        if(angleBetweenLineAndPoint < 200) {
-//            offset= pointOnLine.distance(point);
-//        }
-//        else offset = -pointOnLine.distance(point);
-
         return localStation+startStation;
     }
 
@@ -76,7 +64,10 @@ public class GeoLine implements AligmentElement {
 
     @Override
     public boolean isAdjacent(CogoPoint p) {
-        return false;
+        if (getStation(p) < startStation || getStation(p) > endStation) {
+            return false;
+        }
+        return true;
     }
 
     public void setEndCoord(CogoPoint endCoord) {
