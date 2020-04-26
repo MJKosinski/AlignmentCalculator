@@ -73,8 +73,10 @@ class AlignmentcalcApplicationTests {
         Assertions.assertEquals(1403.628, Precision.round(arc2.getStation(new CogoPoint(16901,-269803)),3),"Curve2 1st station calculation");
         Assertions.assertEquals(-44.176, Precision.round(arc2.getOffset(new CogoPoint(16901,-269803)),3),"Curve2 1st offset calculation");
 
+    }
 
-
+    @Test
+    public void geoClothoidTest() {
 
 
 

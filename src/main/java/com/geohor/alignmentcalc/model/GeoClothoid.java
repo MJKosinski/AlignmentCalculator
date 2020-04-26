@@ -93,12 +93,6 @@ public class GeoClothoid {
         double delthaL = getSpiralLength()/2D;
         CogoPoint onSpiral = getPointByLength(searchedL,paramA,zeroCoord,endCoord,getRotation());
 
-        while (delthaL > 0.0001) {
-
-
-
-
-        }
 
 
 
@@ -129,7 +123,7 @@ public class GeoClothoid {
         return fact;
     }
 
-    public double interpolateLength(double l, CogoPoint onSpiral, CogoPoint projected ,double a, double delthaL) {
+    public double approximateLength(double l, CogoPoint onSpiral, CogoPoint projected ,double a, double delthaL) {  //todo onSpiral is redundant
         double tau = Math.pow(l,2)/Math.pow(a,2);
         double localR = Math.pow(a,2)/l;
         double currentAsimuthOfNormal =  (rotation == RotationDirection.CLOCKWISE_DIRECTION) ? getStartCoord().radiusAzimuth(getEndCoord())+(tau+Math.PI/2) : getStartCoord().radiusAzimuth(getEndCoord())-(tau+Math.PI/2);
@@ -137,15 +131,15 @@ public class GeoClothoid {
         CogoPoint centerPoint = new CogoPoint(onSpiral.getX()+localR*Math.cos(currentAsimuthOfNormal),onSpiral.getY()+localR*Math.sin(currentAsimuthOfNormal));
         double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint,projected);
 
-        if (angleFromCenterToProjected < Math.PI/2 && rotation == RotationDirection.CLOCKWISE_DIRECTION) {
-            return l-(delthaL/2);
+        if (delthaL < 0.0001) return l;
+
+        else if (angleFromCenterToProjected < Math.PI/2 && rotation == RotationDirection.CLOCKWISE_DIRECTION) {
+            return approximateLength(l, onSpiral,projected ,a, l-(delthaL/2));
         }
         else if(angleFromCenterToProjected > Math.PI/2 && rotation == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
-            return l-(delthaL/2);
+            return approximateLength(l, onSpiral,projected ,a, l-(delthaL/2));
         }
-        else return l+(delthaL/2);
-
-
+        else return approximateLength(l, onSpiral,projected ,a, l+(delthaL/2));
     }
 
 
