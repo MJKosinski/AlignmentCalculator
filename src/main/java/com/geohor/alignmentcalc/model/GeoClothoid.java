@@ -9,12 +9,15 @@ public class GeoClothoid {
     private double radiusEnd;
     private double radiusStart;
     private RotationDirection rotation;
-    private double theta;
+    private final double THETA;
+    private final double A_PARAM;
     private double startStation;
     private double endStation;
+    private boolean isArcOnBegin;
+    private double expected_precision;
 
 
-    public GeoClothoid(CogoPoint startCoord, CogoPoint PICoord, CogoPoint endCoord, double spiralLength, double radiusEnd, double radiusStart, RotationDirection rotation, double theta, double startStation) {
+    public GeoClothoid(CogoPoint startCoord, CogoPoint PICoord, CogoPoint endCoord, double spiralLength, double radiusEnd, double radiusStart, RotationDirection rotation, double theta_deg, double startStation) {
         this.startCoord = startCoord;
         this.PICoord = PICoord;
         this.endCoord = endCoord;
@@ -22,10 +25,12 @@ public class GeoClothoid {
         this.radiusEnd = radiusEnd;
         this.radiusStart = radiusStart;
         this.rotation = rotation;
-        this.theta = theta;
+        this.THETA = theta_deg*Math.PI/180;         //change deg to rad
         this.startStation = startStation;
         this.endStation = startStation + spiralLength;
-
+        this.isArcOnBegin = radiusStart > radiusEnd;
+        this.A_PARAM = Math.sqrt(Math.pow(spiralLength, 2) / (2D * this.THETA));
+        this.expected_precision = 0.0001;
     }
 
     public CogoPoint getStartCoord() {
@@ -49,7 +54,7 @@ public class GeoClothoid {
     }
 
     public double getTheta() {
-        return theta;
+        return THETA;
     }
 
     public double getStartStation() {
@@ -58,6 +63,14 @@ public class GeoClothoid {
 
     public double getEndStation() {
         return endStation;
+    }
+
+    public double getA() {
+        return A_PARAM;
+    }
+
+    public boolean isArcOnBegin() {
+        return isArcOnBegin;
     }
 
     public double getSpiralLength() {
@@ -73,52 +86,87 @@ public class GeoClothoid {
         boolean isArcOnBegin = radiusStart > radiusEnd;
         double paramR;
         double paramA;
-        double localStation = spiralLength/2D;
+        double localStation = spiralLength / 2D;
         CogoPoint zeroCoord; // Start of clothoid (R=infinity)
         CogoPoint arcCoord;  // End of clothoid (R=paramR)
-        if(isArcOnBegin) {
+        if (isArcOnBegin()) {
             paramR = radiusStart;
             zeroCoord = endCoord;
             arcCoord = startCoord;
-        }
-        else {
+        } else {
             paramR = radiusEnd;
             zeroCoord = startCoord;
             arcCoord = endCoord;
         }
 
-        paramA = Math.sqrt(spiralLength*paramR);
+        paramA = Math.sqrt(spiralLength * paramR);
         // first check L/2
-        double searchedL = getSpiralLength()/2D;
-        double delthaL = getSpiralLength()/2D;
-        CogoPoint onSpiral = getPointByLength(searchedL,paramA,zeroCoord,endCoord,getRotation());
-
-        while (delthaL > 0.0001) {
-
-
-
-
-        }
-
-
-
-
+        double searchedL = getSpiralLength() / 2D;
+        double delthaL = getSpiralLength() / 2D;
 
 
         return 0;
     }
 
-    public CogoPoint getPointByLength(double l, double a, CogoPoint begin, CogoPoint end, RotationDirection rotation){
+    public CogoPoint getPointByLength(double l, CogoPoint beginOfSpiral, CogoPoint endOfSpiral, RotationDirection rotationFromBeginOfSpiral) {
         double seriesSumX = 0;
         double seriesSumY = 0;
-        double localL = l/a;
+        double localL = l / getA();
         for (int i = 1; i < 10; i++) {
-            seriesSumX += Math.pow(-1,i+1) * (Math.pow(localL,4*i-3)/(factorial((2*i)-2)*((4*i)-3)*Math.pow(2,(2*i)-2)));
-            seriesSumY += Math.pow(-1,i+1) * (Math.pow(localL,4*i-1)/(factorial((2*i)-1)*((4*i)-1)*Math.pow(2,(2*i)-1)));
+            seriesSumX += Math.pow(-1, i + 1) * (Math.pow(localL, 4 * i - 3) / (factorial((2 * i) - 2) * ((4 * i) - 3) * Math.pow(2, (2 * i) - 2)));
+            seriesSumY += Math.pow(-1, i + 1) * (Math.pow(localL, 4 * i - 1) / (factorial((2 * i) - 1) * ((4 * i) - 1) * Math.pow(2, (2 * i) - 1)));
         }
-        double localDX = seriesSumX/a;
-        double localDY = seriesSumY/a;
-        return begin.getXYFromRectangularOffset(end, localDX, localDY);
+        double localDX = seriesSumX * getA();
+        double localDY = rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION ? seriesSumY * getA() : -seriesSumY * getA();
+        return beginOfSpiral.getXYFromRectangularOffset(getPICoord(), localDX, localDY);
+    }
+
+
+    public double interpolateLength(double l, CogoPoint projected, double delthaL) {
+        System.out.print("L="+l+" / deltha ="+delthaL);
+        if (delthaL > expected_precision) {
+            double tau = Math.pow(l, 2) / (2D*Math.pow(getA(), 2));
+            double localR = Math.pow(getA(), 2) / l;
+            CogoPoint beginOfSpiral;  // coord where R = infinity
+            CogoPoint endOfSpiral;  // coord where R = R of arc
+            RotationDirection rotationFromBeginOfSpiral;
+
+            if (isArcOnBegin()) {
+                beginOfSpiral = getEndCoord();
+                endOfSpiral = getStartCoord();
+                rotationFromBeginOfSpiral = getRotation() == RotationDirection.CLOCKWISE_DIRECTION ?
+                        RotationDirection.COUNTER_CLOCKWISE_DIRECTION : RotationDirection.CLOCKWISE_DIRECTION;
+            } else {
+                beginOfSpiral = getStartCoord();
+                endOfSpiral = getEndCoord();
+                rotationFromBeginOfSpiral = getRotation();
+            }
+
+
+            double currentAsimuthOfNormal = (rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION) ?
+                    beginOfSpiral.radiusAzimuth(getPICoord()) + (tau + Math.PI*0.5) : beginOfSpiral.radiusAzimuth(getPICoord()) - (tau + Math.PI *0.5);
+
+            System.out.println(" / CurrA = "+currentAsimuthOfNormal);
+
+            CogoPoint onSpiral = getPointByLength(l, beginOfSpiral, endOfSpiral, rotationFromBeginOfSpiral);
+
+
+            CogoPoint centerPoint = new CogoPoint(onSpiral.getX() + localR * Math.cos(currentAsimuthOfNormal), onSpiral.getY() + localR * Math.sin(currentAsimuthOfNormal));
+            double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint, projected);
+
+
+            if (angleFromCenterToProjected < Math.PI && rotation == RotationDirection.CLOCKWISE_DIRECTION) {
+                return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2)); //l - (delthaL / 2);
+            } else if (angleFromCenterToProjected > Math.PI && rotation == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
+                return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2));
+
+            } else return interpolateLength(l + (delthaL / 2), projected, (delthaL / 2));
+
+
+        }
+        return l;
+
+
     }
 
     public long factorial(int n) {
@@ -128,28 +176,6 @@ public class GeoClothoid {
         }
         return fact;
     }
-
-    public double interpolateLength(double l, CogoPoint onSpiral, CogoPoint projected ,double a, double delthaL) {
-        double tau = Math.pow(l,2)/Math.pow(a,2);
-        double localR = Math.pow(a,2)/l;
-        double currentAsimuthOfNormal =  (rotation == RotationDirection.CLOCKWISE_DIRECTION) ? getStartCoord().radiusAzimuth(getEndCoord())+(tau+Math.PI/2) : getStartCoord().radiusAzimuth(getEndCoord())-(tau+Math.PI/2);
-//        double toProjectedAsimuth = onSpiral.radiusAzimuth(projected);
-        CogoPoint centerPoint = new CogoPoint(onSpiral.getX()+localR*Math.cos(currentAsimuthOfNormal),onSpiral.getY()+localR*Math.sin(currentAsimuthOfNormal));
-        double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint,projected);
-
-        if (angleFromCenterToProjected < Math.PI/2 && rotation == RotationDirection.CLOCKWISE_DIRECTION) {
-            return l-(delthaL/2);
-        }
-        else if(angleFromCenterToProjected > Math.PI/2 && rotation == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
-            return l-(delthaL/2);
-        }
-        else return l+(delthaL/2);
-
-
-    }
-
-
-
 
 
 }

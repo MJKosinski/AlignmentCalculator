@@ -37,16 +37,17 @@ public class CogoPoint extends Point2D {
 
         double deltaX = p2.getX() - getX();
         double deltaY = p2.getY() - getY();
-        double fi = Math.atan(deltaY / deltaX);
-
-        if (deltaX >= 0) {
+        if(deltaX == 0) {
+            return deltaY >= 0 ? Math.PI*0.5 : Math.PI*1.5;
+        }
+        else if (deltaX > 0) {
             if (deltaY >= 0) {
-                return fi;
+                return Math.atan(deltaY / deltaX);   // I QUATER
             }
-            return fi + 2D*Math.PI;
+            return Math.atan(deltaY / deltaX) + 2D*Math.PI;  // IV QUATER
         } else {
 
-            return fi + Math.PI;
+            return Math.atan(deltaY / deltaX) + Math.PI;  // II or III QUATER
         }
 
     }
@@ -62,15 +63,11 @@ public class CogoPoint extends Point2D {
         return angle;
     }
 
-    public CogoPoint getXYFromRectangularOffset(CogoPoint end, double stat, double off) {
+    public CogoPoint getXYFromRectangularOffset(CogoPoint end, double stat, double off) { //X P = XA + lAP cosA AB YP = YA + lAP sinAAB
         double azimuth = radiusAzimuth(end);
         double resultX = getX()+(stat*Math.cos(azimuth))-(off*Math.sin(azimuth));
         double resultY = getY()+(stat*Math.sin(azimuth))+(off*Math.cos(azimuth));
         return new CogoPoint(resultX,resultY);
     }
-
-
-
-
 
 }
