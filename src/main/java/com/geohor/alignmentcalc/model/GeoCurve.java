@@ -40,11 +40,16 @@ public class GeoCurve implements AligmentElement{
     }
 
     @Override
+    public double[] getStationAndOffset(CogoPoint p) {
+        return new double[0];
+    }
+
+
     public double getStation(CogoPoint p) {
         return startStation+getLength(p);
     }
 
-    @Override
+
     public double getOffset(CogoPoint p) {
 
         double angleOf = centerCoord.getAngleOf(startCoord, endCoord);

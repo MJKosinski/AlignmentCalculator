@@ -121,7 +121,7 @@ public class GeoClothoid {
         return beginOfSpiral.getXYFromRectangularOffset(getPICoord(), localDX, localDY);
     }
 
-
+    //gives length from BEGINNING of spiral (where R = infinity)
     public double interpolateLength(double l, CogoPoint projected, double delthaL) {
         System.out.print("L="+l+" / deltha ="+delthaL);
         if (delthaL > expected_precision) {
@@ -146,24 +146,25 @@ public class GeoClothoid {
             double currentAsimuthOfNormal = (rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION) ?
                     beginOfSpiral.radiusAzimuth(getPICoord()) + (tau + Math.PI*0.5) : beginOfSpiral.radiusAzimuth(getPICoord()) - (tau + Math.PI *0.5);
 
-            System.out.println(" / CurrA = "+currentAsimuthOfNormal);
+            System.out.println(" / rot = "+rotationFromBeginOfSpiral);
 
             CogoPoint onSpiral = getPointByLength(l, beginOfSpiral, endOfSpiral, rotationFromBeginOfSpiral);
 
 
             CogoPoint centerPoint = new CogoPoint(onSpiral.getX() + localR * Math.cos(currentAsimuthOfNormal), onSpiral.getY() + localR * Math.sin(currentAsimuthOfNormal));
             double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint, projected);
+            System.out.println(" / angle = "+angleFromCenterToProjected);
 
-
-            if (angleFromCenterToProjected < Math.PI && rotation == RotationDirection.CLOCKWISE_DIRECTION) {
+            if (angleFromCenterToProjected < Math.PI && rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION) {
                 return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2)); //l - (delthaL / 2);
-            } else if (angleFromCenterToProjected > Math.PI && rotation == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
+            } else if (angleFromCenterToProjected > Math.PI && rotationFromBeginOfSpiral == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
                 return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2));
-
             } else return interpolateLength(l + (delthaL / 2), projected, (delthaL / 2));
 
 
         }
+
+        //TODO  check angle fromCenterToProjected =~ pi/2 or 3pi/2
         return l;
 
 

@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+//TODO  needs given-when-then refactor
+
 @SpringBootTest
 class AlignmentcalcApplicationTests {
 
@@ -93,14 +95,17 @@ class AlignmentcalcApplicationTests {
         GeoClothoid cl2 = new GeoClothoid(cl2Start,cl2PI,cl2END,25,0,400,RotationDirection.COUNTER_CLOCKWISE_DIRECTION,1.790493109784,227.8677);
 
 
-//        Assertions.assertEquals(5548421.8673270475,cl1.getPointByLength(0,cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX());
-//        Assertions.assertEquals(5548429.9388168203,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,cl1END, RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX());
-//        Assertions.assertEquals(6543646.5354438974,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getY());
-//        Assertions.assertEquals(5548426.920,Precision.round(cl1.getPointByLength(15.3581,cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX(),3));
-//        Assertions.assertEquals(5.127,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,proj1,cl1.getSpiralLength()/2),3));
-//        Assertions.assertEquals(0,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1Start,cl1.getSpiralLength()/2),3));
-//        Assertions.assertEquals(25,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1END,cl1.getSpiralLength()/2),3));
+        Assertions.assertEquals(5548421.8673270475,cl1.getPointByLength(0,cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX());
+        Assertions.assertEquals(5548429.9388168203,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,cl1END, RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX());
+        Assertions.assertEquals(6543646.5354438974,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getY());
+        Assertions.assertEquals(5548426.920,Precision.round(cl1.getPointByLength(15.3581,cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX(),3));
+        Assertions.assertEquals(5.127,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,proj1,cl1.getSpiralLength()/2),3));
+        Assertions.assertEquals(0,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1Start,cl1.getSpiralLength()/2),3));
+        Assertions.assertEquals(25,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1END,cl1.getSpiralLength()/2),3));
         Assertions.assertEquals(25,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,cl2Start,cl2.getSpiralLength()/2),3));
+        Assertions.assertEquals(0,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,cl2END,cl2.getSpiralLength()/2),3));
+        Assertions.assertEquals(20.271,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj3,cl2.getSpiralLength()/2),3));
+        Assertions.assertEquals(4.269,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj4,cl2.getSpiralLength()/2),3));
 
 
         Assertions.assertEquals(5548447.8855243046,cl2.getPointByLength(cl2.getSpiralLength(),cl2END,cl2Start,RotationDirection.CLOCKWISE_DIRECTION).getX());

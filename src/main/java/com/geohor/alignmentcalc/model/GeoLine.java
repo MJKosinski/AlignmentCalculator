@@ -43,7 +43,7 @@ public class GeoLine implements AligmentElement {
         return endCoord;
     }
 
-    @Override
+
     public double getStation(CogoPoint point) {
 
         double u = (((point.getX()-getStartCoord().getX())*(getEndCoord().getX()-getStartCoord().getX()))
@@ -55,11 +55,16 @@ public class GeoLine implements AligmentElement {
     }
 
 
-    @Override
+
     public double getOffset(CogoPoint point){
         double localStation = getStation(point)-startStation;
         double alphaAngle = getStartCoord().getAngleOf(getEndCoord(),point);
         return localStation*Math.tan(alphaAngle);
+    }
+
+    @Override
+    public double[] getStationAndOffset(CogoPoint p) {
+        return new double[] {getStation(p),getOffset(p)};
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.geohor.alignmentcalc.model;
 
+import java.util.Collection;
+
 public class GeoArc implements AligmentElement {
 //this is type of arcus that is imported from Civil3D xml raport
 
@@ -56,12 +58,12 @@ public class GeoArc implements AligmentElement {
         return endCoord;
     }
 
-    @Override
+
     public double getStation(CogoPoint p) {
         return startStation + getLength(p);
     }
 
-    @Override
+
     public double getOffset(CogoPoint p) {
 
         double offset = 0;
@@ -82,6 +84,11 @@ public class GeoArc implements AligmentElement {
 
         return offset;
 
+    }
+
+    @Override
+    public double[] getStationAndOffset(CogoPoint p) {
+        return new double[] {getStation(p),getOffset(p)};
     }
 
     @Override

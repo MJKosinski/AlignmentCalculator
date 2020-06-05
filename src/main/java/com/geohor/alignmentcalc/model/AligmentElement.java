@@ -6,8 +6,7 @@ public interface AligmentElement {
     public double getEndStation();
     public CogoPoint getStartCoord();
     public CogoPoint getEndCoord();
-    public double getStation(CogoPoint p);
-    public double getOffset(CogoPoint p);
+    public double[] getStationAndOffset(CogoPoint p);
     public boolean isAdjacent(CogoPoint p);
 
 
