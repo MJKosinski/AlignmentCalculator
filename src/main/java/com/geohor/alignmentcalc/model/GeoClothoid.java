@@ -1,6 +1,6 @@
 package com.geohor.alignmentcalc.model;
 
-public class GeoClothoid {
+public class GeoClothoid implements AligmentElement{
 
     private CogoPoint startCoord;
     private CogoPoint PICoord;    // intersection of long and short tangent
@@ -43,6 +43,23 @@ public class GeoClothoid {
 
     public CogoPoint getEndCoord() {
         return endCoord;
+    }
+
+    @Override
+    public double[] getStationAndOffset(CogoPoint p) {
+        double station = interpolateLength(this.getSpiralLength()*0.5,p,this.getSpiralLength()*0.5); //TODO finish this
+
+
+        return new double[0];
+    }
+
+    @Override
+    public boolean isAdjacent(CogoPoint p) {
+
+        if (isInFirstOrFourthQuater(this.getStartCoord().getAngleOf(this.getPICoord(),p)) || isInFirstOrFourthQuater(this.getEndCoord().getAngleOf(this.getPICoord(),p))) {
+            return true;
+        }
+        return false;
     }
 
     public double getRadiusEnd() {
@@ -176,6 +193,11 @@ public class GeoClothoid {
             fact = fact * i;
         }
         return fact;
+    }
+
+    public boolean isInFirstOrFourthQuater(double angle) {
+        return angle <= Math.PI * .5 || angle >= Math.PI * 1.5;
+
     }
 
 
