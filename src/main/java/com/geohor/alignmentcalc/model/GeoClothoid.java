@@ -8,7 +8,7 @@ public class GeoClothoid implements AligmentElement{
     private double spiralLength;
     private double radiusEnd;
     private double radiusStart;
-    private RotationDirection rotation;
+    private RotationDirection rotation;  //TODO that should be boolean
     private final double THETA;
     private final double A_PARAM;
     private double startStation;
@@ -45,9 +45,36 @@ public class GeoClothoid implements AligmentElement{
         return endCoord;
     }
 
+    public CogoPoint getStartOfSpiralCoord() {
+
+        if(isArcOnBegin()) {
+            return getEndCoord();
+        }
+        else return getStartCoord();
+    }
+
+    public CogoPoint getEndOfSpiralCoord() {
+        if(isArcOnBegin()){
+            return getStartCoord();
+        }
+        else return getEndCoord();
+    }
+
+//    public RotationDirection getRotationFromBeginOfSpiral() {
+//        if(isArcOnBegin()){
+//
+//
+//        }
+//
+//    }
+
     @Override
     public double[] getStationAndOffset(CogoPoint p) {
-        double station = interpolateLength(this.getSpiralLength()*0.5,p,this.getSpiralLength()*0.5); //TODO finish this
+        double length = interpolateLength(this.getSpiralLength() * 0.5, p, this.getSpiralLength() * 0.5);
+        double station = getStation(length);
+        CogoPoint projected;
+
+        double offset;  //TODO finish this
 
 
         return new double[0];
@@ -99,30 +126,15 @@ public class GeoClothoid implements AligmentElement{
         return rotation;
     }
 
-    double getStation(CogoPoint p) {
-        boolean isArcOnBegin = radiusStart > radiusEnd;
-        double paramR;
-        double paramA;
-        double localStation = spiralLength / 2D;
-        CogoPoint zeroCoord; // Start of clothoid (R=infinity)
-        CogoPoint arcCoord;  // End of clothoid (R=paramR)
-        if (isArcOnBegin()) {
-            paramR = radiusStart;
-            zeroCoord = endCoord;
-            arcCoord = startCoord;
-        } else {
-            paramR = radiusEnd;
-            zeroCoord = startCoord;
-            arcCoord = endCoord;
+    double getStation(double length) {
+        double station;
+        if (this.isArcOnBegin()) {
+            station = this.getEndStation() - length;
         }
-
-        paramA = Math.sqrt(spiralLength * paramR);
-        // first check L/2
-        double searchedL = getSpiralLength() / 2D;
-        double delthaL = getSpiralLength() / 2D;
-
-
-        return 0;
+        else {
+            station = this.getStartStation() + length;
+        }
+        return station;
     }
 
     public CogoPoint getPointByLength(double l, CogoPoint beginOfSpiral, CogoPoint endOfSpiral, RotationDirection rotationFromBeginOfSpiral) {
