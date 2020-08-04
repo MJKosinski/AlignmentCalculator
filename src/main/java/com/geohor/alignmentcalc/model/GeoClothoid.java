@@ -8,7 +8,7 @@ public class GeoClothoid implements AligmentElement{
     private double spiralLength;
     private double radiusEnd;
     private double radiusStart;
-    private RotationDirection rotation;  //TODO that should be boolean
+    private boolean isClockWiseRotated;
     private final double THETA;
     private final double A_PARAM;
     private double startStation;
@@ -17,20 +17,28 @@ public class GeoClothoid implements AligmentElement{
     private double expected_precision;
 
 
-    public GeoClothoid(CogoPoint startCoord, CogoPoint PICoord, CogoPoint endCoord, double spiralLength, double radiusEnd, double radiusStart, RotationDirection rotation, double theta_deg, double startStation) {
+    public GeoClothoid(CogoPoint startCoord, CogoPoint PICoord, CogoPoint endCoord, double spiralLength, double radiusEnd, double radiusStart,boolean isClockWiseRotated, double theta_deg, double startStation) {
         this.startCoord = startCoord;
         this.PICoord = PICoord;
         this.endCoord = endCoord;
         this.spiralLength = spiralLength;
         this.radiusEnd = radiusEnd;
         this.radiusStart = radiusStart;
-        this.rotation = rotation;
+        this.isClockWiseRotated = isClockWiseRotated;
         this.THETA = theta_deg*Math.PI/180;         //change deg to rad
         this.startStation = startStation;
         this.endStation = startStation + spiralLength;
         this.isArcOnBegin = radiusStart > radiusEnd;
         this.A_PARAM = Math.sqrt(Math.pow(spiralLength, 2) / (2D * this.THETA));
         this.expected_precision = 0.0001;
+    }
+
+    public boolean isClockWiseRotated() {
+        return isClockWiseRotated;
+    }
+
+    public boolean isClockWiseRotatedFromBeginOfSpiral() {
+        return isArcOnBegin == !isClockWiseRotated();
     }
 
     public CogoPoint getStartCoord() {
@@ -60,13 +68,6 @@ public class GeoClothoid implements AligmentElement{
         else return getEndCoord();
     }
 
-//    public RotationDirection getRotationFromBeginOfSpiral() {
-//        if(isArcOnBegin()){
-//
-//
-//        }
-//
-//    }
 
     @Override
     public double[] getStationAndOffset(CogoPoint p) {
@@ -121,11 +122,6 @@ public class GeoClothoid implements AligmentElement{
         return spiralLength;
     }
 
-
-    public RotationDirection getRotation() {
-        return rotation;
-    }
-
     double getStation(double length) {
         double station;
         if (this.isArcOnBegin()) {
@@ -137,7 +133,7 @@ public class GeoClothoid implements AligmentElement{
         return station;
     }
 
-    public CogoPoint getPointByLength(double l, CogoPoint beginOfSpiral, CogoPoint endOfSpiral, RotationDirection rotationFromBeginOfSpiral) {
+    public CogoPoint getPointByLength(double l, CogoPoint beginOfSpiral , boolean isClockWiseRotatedFromBeginOfSpiral) {
         double seriesSumX = 0;
         double seriesSumY = 0;
         double localL = l / getA();
@@ -146,7 +142,7 @@ public class GeoClothoid implements AligmentElement{
             seriesSumY += Math.pow(-1, i + 1) * (Math.pow(localL, 4 * i - 1) / (factorial((2 * i) - 1) * ((4 * i) - 1) * Math.pow(2, (2 * i) - 1)));
         }
         double localDX = seriesSumX * getA();
-        double localDY = rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION ? seriesSumY * getA() : -seriesSumY * getA();
+        double localDY = isClockWiseRotatedFromBeginOfSpiral ? seriesSumY * getA() : -seriesSumY * getA();
         return beginOfSpiral.getXYFromRectangularOffset(getPICoord(), localDX, localDY);
     }
 
@@ -156,37 +152,22 @@ public class GeoClothoid implements AligmentElement{
         if (delthaL > expected_precision) {
             double tau = Math.pow(l, 2) / (2D*Math.pow(getA(), 2));
             double localR = Math.pow(getA(), 2) / l;
-            CogoPoint beginOfSpiral;  // coord where R = infinity
-            CogoPoint endOfSpiral;  // coord where R = R of arc
-            RotationDirection rotationFromBeginOfSpiral;
+            CogoPoint beginOfSpiral = getStartOfSpiralCoord();  // coord where R = infinity
 
-            if (isArcOnBegin()) {
-                beginOfSpiral = getEndCoord();
-                endOfSpiral = getStartCoord();
-                rotationFromBeginOfSpiral = getRotation() == RotationDirection.CLOCKWISE_DIRECTION ?
-                        RotationDirection.COUNTER_CLOCKWISE_DIRECTION : RotationDirection.CLOCKWISE_DIRECTION;
-            } else {
-                beginOfSpiral = getStartCoord();
-                endOfSpiral = getEndCoord();
-                rotationFromBeginOfSpiral = getRotation();
-            }
-
-
-            double currentAsimuthOfNormal = (rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION) ?
+            double currentAsimuthOfNormal = (isClockWiseRotatedFromBeginOfSpiral()) ?
                     beginOfSpiral.radiusAzimuth(getPICoord()) + (tau + Math.PI*0.5) : beginOfSpiral.radiusAzimuth(getPICoord()) - (tau + Math.PI *0.5);
 
-            System.out.println(" / rot = "+rotationFromBeginOfSpiral);
 
-            CogoPoint onSpiral = getPointByLength(l, beginOfSpiral, endOfSpiral, rotationFromBeginOfSpiral);
+            CogoPoint onSpiral = getPointByLength(l, beginOfSpiral, isClockWiseRotatedFromBeginOfSpiral());
 
 
             CogoPoint centerPoint = new CogoPoint(onSpiral.getX() + localR * Math.cos(currentAsimuthOfNormal), onSpiral.getY() + localR * Math.sin(currentAsimuthOfNormal));
             double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint, projected);
             System.out.println(" / angle = "+angleFromCenterToProjected);
 
-            if (angleFromCenterToProjected < Math.PI && rotationFromBeginOfSpiral == RotationDirection.CLOCKWISE_DIRECTION) {
+            if (angleFromCenterToProjected < Math.PI && isClockWiseRotatedFromBeginOfSpiral()) {
                 return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2)); //l - (delthaL / 2);
-            } else if (angleFromCenterToProjected > Math.PI && rotationFromBeginOfSpiral == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
+            } else if (angleFromCenterToProjected > Math.PI && !isClockWiseRotatedFromBeginOfSpiral()) {
                 return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2));
             } else return interpolateLength(l + (delthaL / 2), projected, (delthaL / 2));
 

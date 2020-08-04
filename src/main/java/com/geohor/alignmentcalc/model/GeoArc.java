@@ -11,11 +11,12 @@ public class GeoArc implements AligmentElement {
     private CogoPoint piCoord;    // tangent intersection point
     private double radius;
     private RotationDirection rotation;
+    private boolean isClockWiseRotated;
     private double startStation;
     private double endStation;
 
 
-    public GeoArc(CogoPoint startCoord, CogoPoint endCoord, CogoPoint centerCoord, CogoPoint piCoord, double radius, double startStation, RotationDirection rotation) {
+    public GeoArc(CogoPoint startCoord, CogoPoint endCoord, CogoPoint centerCoord, CogoPoint piCoord, double radius, double startStation, boolean isClockWiseRotated) {
         this.startCoord = startCoord;
         this.endCoord = endCoord;
         this.centerCoord = centerCoord;
@@ -23,7 +24,7 @@ public class GeoArc implements AligmentElement {
         this.radius = radius;
         this.startStation = startStation;
         this.endStation = startStation + getLength();
-        this.rotation = rotation;
+        this.isClockWiseRotated = isClockWiseRotated;
     }
 
     public CogoPoint getCenterCoord() {
@@ -68,20 +69,12 @@ public class GeoArc implements AligmentElement {
 
         double offset = 0;
 
-        switch (rotation) {
-
-            case CLOCKWISE_DIRECTION:
-                offset = radius - centerCoord.distance(p);
-                break;
-
-
-            case COUNTER_CLOCKWISE_DIRECTION:
-                offset = centerCoord.distance(p) - radius;
-                break;
-
-
+        if(isClockWiseRotated()) {
+            offset = radius - centerCoord.distance(p);
         }
-
+        else {
+            offset = centerCoord.distance(p) - radius;
+        }
         return offset;
 
     }
@@ -94,10 +87,10 @@ public class GeoArc implements AligmentElement {
     @Override
     public boolean isAdjacent(CogoPoint p) {
 
-        if(centerCoord.getAngleOf(startCoord, p) <= centerCoord.getAngleOf(startCoord, endCoord) && rotation == RotationDirection.CLOCKWISE_DIRECTION) {
+        if(centerCoord.getAngleOf(startCoord, p) <= centerCoord.getAngleOf(startCoord, endCoord) && isClockWiseRotated()) {
             return true;
         }
-        else if (centerCoord.getAngleOf(startCoord, p) >= centerCoord.getAngleOf(startCoord, endCoord) && rotation == RotationDirection.COUNTER_CLOCKWISE_DIRECTION) {
+        else if (centerCoord.getAngleOf(startCoord, p) >= centerCoord.getAngleOf(startCoord, endCoord) && !isClockWiseRotated()) {
             return true;
         }
 
@@ -105,16 +98,20 @@ public class GeoArc implements AligmentElement {
     }
 
     public double getLength() {
-        if(rotation == RotationDirection.CLOCKWISE_DIRECTION)
+        if(isClockWiseRotated())
             return centerCoord.getAngleOf(startCoord, startCoord) * radius;
         else
         return centerCoord.getAngleOf(endCoord, startCoord) * radius;
     }
 
     public double getLength(CogoPoint p) {
-        if(rotation == RotationDirection.CLOCKWISE_DIRECTION)
+        if(isClockWiseRotated())
             return centerCoord.getAngleOf(startCoord, p) * radius;
         else
         return centerCoord.getAngleOf(p, startCoord) * radius;
+    }
+
+    public boolean isClockWiseRotated() {
+        return isClockWiseRotated;
     }
 }

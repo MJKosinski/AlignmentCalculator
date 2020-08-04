@@ -51,8 +51,8 @@ class AlignmentcalcApplicationTests {
 
 //        GeoCurve curve1 = new GeoCurve(start,end,center,1088.9593);
 
-        GeoArc arc1 = new GeoArc(start,end,center,center,100D,1088.9593, RotationDirection.COUNTER_CLOCKWISE_DIRECTION);
-        GeoArc arc2 = new GeoArc(start2,end2,center2,center,150D,1351.1336, RotationDirection.CLOCKWISE_DIRECTION);
+        GeoArc arc1 = new GeoArc(start,end,center,center,100D,1088.9593, false);
+        GeoArc arc2 = new GeoArc(start2,end2,center2,center,150D,1351.1336, true);
 
         Assertions.assertEquals(111.588, Precision.round(arc1.getLength(),3),"Curve length calculation");
         Assertions.assertEquals(100, Precision.round(arc1.getRadius(),3),"Curve radius calculation");
@@ -85,20 +85,20 @@ class AlignmentcalcApplicationTests {
         CogoPoint cl1END = new CogoPoint(5548429.9388168203, 6543646.5354438974);
         CogoPoint proj1 = new CogoPoint(5548427.947,6543666.897);
         CogoPoint proj2 = new CogoPoint(5548424.438,	6543650.395);
-        GeoClothoid cl1 = new GeoClothoid(cl1Start,cl1PI,cl1END,25,400,0,RotationDirection.COUNTER_CLOCKWISE_DIRECTION,1.790493109784,106.0544);
+        GeoClothoid cl1 = new GeoClothoid(cl1Start,cl1PI,cl1END,25,400,0,false,1.790493109784,106.0544);
 
         CogoPoint cl2Start = new CogoPoint(5548447.8855243046, 6543551.640399944);
         CogoPoint cl2PI = new CogoPoint(5548448.4343230929, 6543543.3243802311);
         CogoPoint cl2END = new CogoPoint(5548449.0116939694, 6543526.6668641428);
         CogoPoint proj3 = new CogoPoint(5548454.647,6543547.278);
         CogoPoint proj4 = new CogoPoint(5548445.905,6543530.828);
-        GeoClothoid cl2 = new GeoClothoid(cl2Start,cl2PI,cl2END,25,0,400,RotationDirection.COUNTER_CLOCKWISE_DIRECTION,1.790493109784,227.8677);
+        GeoClothoid cl2 = new GeoClothoid(cl2Start,cl2PI,cl2END,25,0,400,false,1.790493109784,227.8677);
 
 
-        Assertions.assertEquals(5548421.8673270475,cl1.getPointByLength(0,cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX());
-        Assertions.assertEquals(5548429.9388168203,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,cl1END, RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX());
-        Assertions.assertEquals(6543646.5354438974,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getY());
-        Assertions.assertEquals(5548426.920,Precision.round(cl1.getPointByLength(15.3581,cl1Start,cl1END,RotationDirection.COUNTER_CLOCKWISE_DIRECTION).getX(),3));
+        Assertions.assertEquals(5548421.8673270475,cl1.getPointByLength(0,cl1Start,false).getX());
+        Assertions.assertEquals(5548429.9388168203,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start, false).getX());
+        Assertions.assertEquals(6543646.5354438974,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,false).getY());
+        Assertions.assertEquals(5548426.920,Precision.round(cl1.getPointByLength(15.3581,cl1Start,false).getX(),3));
         Assertions.assertEquals(5.127,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,proj1,cl1.getSpiralLength()/2),3));
         Assertions.assertEquals(0,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1Start,cl1.getSpiralLength()/2),3));
         Assertions.assertEquals(25,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1END,cl1.getSpiralLength()/2),3));
@@ -108,8 +108,8 @@ class AlignmentcalcApplicationTests {
         Assertions.assertEquals(4.269,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj4,cl2.getSpiralLength()/2),3));
 
 
-        Assertions.assertEquals(5548447.8855243046,cl2.getPointByLength(cl2.getSpiralLength(),cl2END,cl2Start,RotationDirection.CLOCKWISE_DIRECTION).getX());
-        Assertions.assertEquals(6543526.6668641428,cl2.getPointByLength(0,cl2END,cl2Start,RotationDirection.CLOCKWISE_DIRECTION).getY());
+        Assertions.assertEquals(5548447.8855243046,cl2.getPointByLength(cl2.getSpiralLength(),cl2END,true).getX());
+        Assertions.assertEquals(6543526.6668641428,cl2.getPointByLength(0,cl2END,true).getY());
 
     }
 
