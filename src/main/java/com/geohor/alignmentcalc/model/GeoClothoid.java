@@ -30,7 +30,7 @@ public class GeoClothoid implements AligmentElement{
         this.endStation = startStation + spiralLength;
         this.isArcOnBegin = radiusStart > radiusEnd;
         this.A_PARAM = Math.sqrt(Math.pow(spiralLength, 2) / (2D * this.THETA));
-        this.expected_precision = 0.0001;
+        this.expected_precision = 0.00005;
     }
 
     public boolean isClockWiseRotated() {
@@ -71,14 +71,21 @@ public class GeoClothoid implements AligmentElement{
 
     @Override
     public double[] getStationAndOffset(CogoPoint p) {
-        double length = interpolateLength(this.getSpiralLength() * 0.5, p, this.getSpiralLength() * 0.5);
-        double station = getStation(length);
-        CogoPoint projected;
 
-        double offset;  //TODO finish this
+        double[] result = interpolateLength(this.getSpiralLength() * 0.5, p, this.getSpiralLength() * 0.5);  //length and offset from begin of spiral
 
+        if(isArcOnBegin()) {
+            result[0] = getEndStation()-result[0];
+        }
+        else {
+            result[0] = result[0] + getStartStation();
+        }
 
-        return new double[0];
+        if(isClockWiseRotated()) {
+            result[1] = -result[1];
+        }
+
+        return result;
     }
 
     @Override
@@ -146,23 +153,21 @@ public class GeoClothoid implements AligmentElement{
         return beginOfSpiral.getXYFromRectangularOffset(getPICoord(), localDX, localDY);
     }
 
-    //gives length from BEGINNING of spiral (where R = infinity)
-    public double interpolateLength(double l, CogoPoint projected, double delthaL) {
+    //gives length from BEGINNING of spiral (where R = infinity) and negative offset to the centerpoint direction
+    public double[] interpolateLength(double l, CogoPoint projected, double delthaL) {
         System.out.print("L="+l+" / deltha ="+delthaL);
+
+        double tau = Math.pow(l, 2) / (2D*Math.pow(getA(), 2));
+        double localR = Math.pow(getA(), 2) / l;
+        double currentAsimuthOfNormal = (isClockWiseRotatedFromBeginOfSpiral()) ?
+                getStartOfSpiralCoord().radiusAzimuth(getPICoord()) + (tau + Math.PI*0.5) : getStartOfSpiralCoord().radiusAzimuth(getPICoord()) - (tau + Math.PI *0.5);
+        CogoPoint onSpiral = getPointByLength(l, getStartOfSpiralCoord(), isClockWiseRotatedFromBeginOfSpiral());
+        CogoPoint centerPoint = new CogoPoint(onSpiral.getX() + localR * Math.cos(currentAsimuthOfNormal), onSpiral.getY() + localR * Math.sin(currentAsimuthOfNormal));
+
+        double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint, projected);
+
         if (delthaL > expected_precision) {
-            double tau = Math.pow(l, 2) / (2D*Math.pow(getA(), 2));
-            double localR = Math.pow(getA(), 2) / l;
-            CogoPoint beginOfSpiral = getStartOfSpiralCoord();  // coord where R = infinity
 
-            double currentAsimuthOfNormal = (isClockWiseRotatedFromBeginOfSpiral()) ?
-                    beginOfSpiral.radiusAzimuth(getPICoord()) + (tau + Math.PI*0.5) : beginOfSpiral.radiusAzimuth(getPICoord()) - (tau + Math.PI *0.5);
-
-
-            CogoPoint onSpiral = getPointByLength(l, beginOfSpiral, isClockWiseRotatedFromBeginOfSpiral());
-
-
-            CogoPoint centerPoint = new CogoPoint(onSpiral.getX() + localR * Math.cos(currentAsimuthOfNormal), onSpiral.getY() + localR * Math.sin(currentAsimuthOfNormal));
-            double angleFromCenterToProjected = onSpiral.getAngleOf(centerPoint, projected);
             System.out.println(" / angle = "+angleFromCenterToProjected);
 
             if (angleFromCenterToProjected < Math.PI && isClockWiseRotatedFromBeginOfSpiral()) {
@@ -171,12 +176,16 @@ public class GeoClothoid implements AligmentElement{
                 return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2));
             } else return interpolateLength(l + (delthaL / 2), projected, (delthaL / 2));
 
-
         }
 
-        //TODO  check angle fromCenterToProjected =~ pi/2 or 3pi/2
-        return l;
+        double offset = onSpiral.distance(projected);
 
+        if(angleFromCenterToProjected < 0.5*Math.PI || angleFromCenterToProjected > 1.5*Math.PI) offset = -offset;
+
+
+
+        //TODO  check angle fromCenterToProjected =~ 0 or pi
+        return new double[] {l,offset};
 
     }
 

@@ -99,17 +99,41 @@ class AlignmentcalcApplicationTests {
         Assertions.assertEquals(5548429.9388168203,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start, false).getX());
         Assertions.assertEquals(6543646.5354438974,cl1.getPointByLength(cl1.getSpiralLength(),cl1Start,false).getY());
         Assertions.assertEquals(5548426.920,Precision.round(cl1.getPointByLength(15.3581,cl1Start,false).getX(),3));
-        Assertions.assertEquals(5.127,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,proj1,cl1.getSpiralLength()/2),3));
-        Assertions.assertEquals(0,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1Start,cl1.getSpiralLength()/2),3));
-        Assertions.assertEquals(25,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1END,cl1.getSpiralLength()/2),3));
-        Assertions.assertEquals(25,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,cl2Start,cl2.getSpiralLength()/2),3));
-        Assertions.assertEquals(0,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,cl2END,cl2.getSpiralLength()/2),3));
-        Assertions.assertEquals(20.271,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj3,cl2.getSpiralLength()/2),3));
-        Assertions.assertEquals(4.269,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj4,cl2.getSpiralLength()/2),3));
+        Assertions.assertEquals(5.127,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,proj1,cl1.getSpiralLength()/2)[0],3));
+        Assertions.assertEquals(0,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1Start,cl1.getSpiralLength()/2)[0],3));
+        Assertions.assertEquals(25,Precision.round(cl1.interpolateLength(cl1.getSpiralLength()/2,cl1END,cl1.getSpiralLength()/2)[0],3));
+        Assertions.assertEquals(25,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,cl2Start,cl2.getSpiralLength()/2)[0],3));
+        Assertions.assertEquals(0,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,cl2END,cl2.getSpiralLength()/2)[0],3));
+        Assertions.assertEquals(20.271,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj3,cl2.getSpiralLength()/2)[0],3));
+        Assertions.assertEquals(4.269,Precision.round(cl2.interpolateLength(cl2.getSpiralLength()/2,proj4,cl2.getSpiralLength()/2)[0],3));
 
 
         Assertions.assertEquals(5548447.8855243046,cl2.getPointByLength(cl2.getSpiralLength(),cl2END,true).getX());
         Assertions.assertEquals(6543526.6668641428,cl2.getPointByLength(0,cl2END,true).getY());
+
+
+        Assertions.assertArrayEquals(new double[] {111.182,4.638}, roundMe(cl1.getStationAndOffset(proj1),3));
+        Assertions.assertArrayEquals(new double[] {125.660,-4.039}, roundMe(cl1.getStationAndOffset(proj2),3));
+        Assertions.assertArrayEquals(new double[] {232.597,6.486}, roundMe(cl2.getStationAndOffset(proj3),3));
+        Assertions.assertArrayEquals(new double[] {248.599,-2.959}, roundMe(cl2.getStationAndOffset(proj4),3));
+        Assertions.assertArrayEquals(new double[] {106.054,-0.000}, roundMe(cl1.getStationAndOffset(cl1Start),3));
+        Assertions.assertArrayEquals(new double[] {131.054,0.000}, roundMe(cl1.getStationAndOffset(cl1END),3));
+        Assertions.assertArrayEquals(new double[] {227.868,-0.000}, roundMe(cl2.getStationAndOffset(cl2Start),3));
+        Assertions.assertArrayEquals(new double[] {252.868,0.000}, roundMe(cl2.getStationAndOffset(cl2END),3));
+
+    }
+
+    public double[] roundMe(double[] input, int scale) {
+
+        if(input == null) {
+            return null;
+        }
+
+        for (int i = 0; i < input.length; i++) {
+
+            input[i] = Precision.round(input[i],scale);
+        }
+        return input;
 
     }
 
