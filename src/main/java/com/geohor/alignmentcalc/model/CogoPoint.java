@@ -63,10 +63,10 @@ public class CogoPoint extends Point2D {
         return angle;
     }
 
-    public CogoPoint getXYFromRectangularOffset(CogoPoint end, double stat, double off) { //X P = XA + lAP cosA AB YP = YA + lAP sinAAB
+    public CogoPoint getXYFromRectangularOffset(CogoPoint end, double station, double offset) { //X P = XA + lAP cosA AB YP = YA + lAP sinAAB
         double azimuth = radiusAzimuth(end);
-        double resultX = getX()+(stat*Math.cos(azimuth))-(off*Math.sin(azimuth));
-        double resultY = getY()+(stat*Math.sin(azimuth))+(off*Math.cos(azimuth));
+        double resultX = getX()+(station*Math.cos(azimuth))-(offset*Math.sin(azimuth));
+        double resultY = getY()+(station*Math.sin(azimuth))+(offset*Math.cos(azimuth));
         return new CogoPoint(resultX,resultY);
     }
 

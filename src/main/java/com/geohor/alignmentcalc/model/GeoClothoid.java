@@ -155,7 +155,6 @@ public class GeoClothoid implements AligmentElement{
 
     //gives length from BEGINNING of spiral (where R = infinity) and negative offset to the centerpoint direction
     public double[] interpolateLength(double l, CogoPoint projected, double delthaL) {
-        System.out.print("L="+l+" / deltha ="+delthaL);
 
         double tau = Math.pow(l, 2) / (2D*Math.pow(getA(), 2));
         double localR = Math.pow(getA(), 2) / l;
@@ -168,7 +167,6 @@ public class GeoClothoid implements AligmentElement{
 
         if (delthaL > expected_precision) {
 
-            System.out.println(" / angle = "+angleFromCenterToProjected);
 
             if (angleFromCenterToProjected < Math.PI && isClockWiseRotatedFromBeginOfSpiral()) {
                 return interpolateLength(l - (delthaL / 2), projected, (delthaL / 2)); //l - (delthaL / 2);
